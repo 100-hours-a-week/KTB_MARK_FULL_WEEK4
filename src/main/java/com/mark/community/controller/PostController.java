@@ -1,7 +1,6 @@
 package com.mark.community.controller;
 
 import com.mark.community.dto.*;
-import com.mark.community.entity.Comment;
 import com.mark.community.entity.Post;
 import com.mark.community.entity.User;
 import com.mark.community.exception.CustomException;
@@ -173,11 +172,12 @@ public class PostController {
 
         PostListResponse postListResponse = new PostListResponse();
 
+
+
         for(Post post : posts){
             Counts counts = new Counts(post.getLikes(), post.getComments(), post.getViews());
 
             SimpleDateFormat sd = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-
 
             PostResponse postResponse =  new PostResponse(
                     post.getPostId(),
@@ -189,7 +189,7 @@ public class PostController {
                     counts,
                     sd.format(post.getPostTime()),
                     post.isDeleted(),
-                    post.isBlind()
+                    post.getReports() >= 5
             );
 
             tempList.add(postResponse);
@@ -198,14 +198,76 @@ public class PostController {
         postListResponse.setTotal(posts.size());
         postListResponse.setList(tempList);
 
-
-
-
         return ResponseEntity
                 .status(ApiResponseMessage.SUCCESS_GET_POSTS.getStatusCode())
                 .body(new ApiResponse<>(ApiResponseMessage.SUCCESS_GET_POSTS, postListResponse));
     }
 
+    @PostMapping("/{postId}/likes")
+    public ResponseEntity<?> addLike(@PathVariable String postId, HttpServletRequest httpRequest){
+        HttpSession session = httpRequest.getSession(false);
+
+        if(session == null){
+            throw new CustomException(ApiResponseErrorMessage.EXPIRED_SESSION);
+        }
+
+        postService.addLike(postId);
+
+        return ResponseEntity
+                .status(ApiResponseMessage.SUCCESS_ADD_LIKE.getStatusCode())
+                .body(new ApiResponse<>(ApiResponseMessage.SUCCESS_ADD_LIKE));
+    }
+
+
+    @DeleteMapping("/{postId}/likes")
+    public ResponseEntity<?> deleteLike(@PathVariable String postId, HttpServletRequest httpRequest){
+        HttpSession session = httpRequest.getSession(false);
+
+        if(session == null){
+            throw new CustomException(ApiResponseErrorMessage.EXPIRED_SESSION);
+        }
+
+        postService.deleteLike(postId);
+
+        return ResponseEntity
+                .status(ApiResponseMessage.SUCCESS_DELETE_LIKE.getStatusCode())
+                .body(new ApiResponse<>(ApiResponseMessage.SUCCESS_DELETE_LIKE));
+    }
+
+    @PatchMapping("/{postId}")
+    public ResponseEntity<?> editPost(@PathVariable String postId,
+                                          @RequestPart("request") PostTempRequest request,
+                                          @RequestPart("images") MultipartFile[] images,
+                                          HttpServletRequest httpRequest
+    ){
+        HttpSession session = httpRequest.getSession(false);
+
+        if(session == null){
+            throw new CustomException(ApiResponseErrorMessage.EXPIRED_SESSION);
+        }
+        Post post = postService.editPost(postId, request, images);
+
+        return ResponseEntity
+                .status(ApiResponseMessage.SUCCESS_POST_TEMP.getStatusCode())
+                .body(new ApiResponse<>(ApiResponseMessage.SUCCESS_POST_TEMP,
+                        new PostTempResponse(postId, post.getFileIds())));
+    }
+
+    @PostMapping("/{postId}/reports")
+    public ResponseEntity<?> addReports(@PathVariable String postId, HttpServletRequest httpRequest){
+        HttpSession session = httpRequest.getSession(false);
+
+        if(session == null){
+            throw new CustomException(ApiResponseErrorMessage.EXPIRED_SESSION);
+        }
+
+        postService.addReports(postId);
+
+        return ResponseEntity
+                .status(ApiResponseMessage.SUCCESS_ADD_REPORT.getStatusCode())
+                .body(new ApiResponse<>(ApiResponseMessage.SUCCESS_ADD_REPORT));
+
+    }
 
 
 }

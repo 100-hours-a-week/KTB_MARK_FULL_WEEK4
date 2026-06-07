@@ -6,9 +6,7 @@ import org.springframework.stereotype.Repository;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Repository
 public class CommentRepositoryImpl implements CommentRepository {
@@ -51,4 +49,17 @@ public class CommentRepositoryImpl implements CommentRepository {
         return Optional.ofNullable(comments.get(commentId));
     }
 
+    @Override
+    public Optional<List<Comment>> findByPostIdLike(String postId) {
+        List<Comment> tempList = new ArrayList<>();
+
+        for(Comment comment : comments.values() ){
+            if(comment.getPostId().equals(postId)){
+                tempList.add(comment);
+            }
+        }
+
+        return Optional.of(tempList);
+
+    }
 }

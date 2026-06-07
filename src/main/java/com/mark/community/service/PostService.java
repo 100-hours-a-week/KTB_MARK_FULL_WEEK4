@@ -1,9 +1,7 @@
 package com.mark.community.service;
 
-import com.mark.community.dto.CommentRequest;
 import com.mark.community.dto.PostRequest;
 import com.mark.community.dto.PostTempRequest;
-import com.mark.community.entity.Comment;
 import com.mark.community.entity.Post;
 import com.mark.community.entity.User;
 import com.mark.community.exception.CustomException;
@@ -105,11 +103,54 @@ public class PostService {
     }
 
     public List<Post> getPosts(int size, String lastPostId) {
-        List<Post> posts =  postRepository.findAllOrderByPostTime(size, lastPostId);
-
-        return posts;
-
+       return postRepository.findAllOrderByPostTime(size, lastPostId);
     }
 
 
+    public void addLike(String postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CustomException(ApiResponseErrorMessage.POST_NOT_FOUND));
+
+        post.setLikes(post.getLikes() + 1);
+
+        postRepository.save(post);
+    }
+
+    public void deleteLike(String postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CustomException(ApiResponseErrorMessage.POST_NOT_FOUND));
+
+        post.setLikes(post.getLikes() - 1);
+
+        postRepository.save(post);
+    }
+
+    public Post editPost(String postId, PostTempRequest request, MultipartFile[] images) {
+        List<String> tempList = new ArrayList<>();
+
+        if(images != null){
+            for(MultipartFile file : images){
+                tempList.add(fileService.upload(file));
+            }
+        }
+        Post post = postRepository.findById(postId).
+                orElseThrow(() -> new CustomException(ApiResponseErrorMessage.POST_NOT_FOUND));
+
+        post.setFileIds(tempList);
+
+        if(!request.getTitle().isBlank()) post.setTitle(request.getTitle());
+
+        if(!request.getBody().isBlank()) post.setBody(request.getBody());
+
+        postRepository.save(post);
+
+        return post;
+    }
+
+    public void addReports(String postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CustomException(ApiResponseErrorMessage.POST_NOT_FOUND));
+
+        post.setReports(post.getReports() + 1);
+    }
 }

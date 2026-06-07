@@ -15,6 +15,9 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @RestController
 public class CommentController {
     private final CommentService commentService;
@@ -88,6 +91,35 @@ public class CommentController {
         return ResponseEntity
                 .status(ApiResponseMessage.SUCCESS_DELETE_COMMENT.getStatusCode())
                 .body(new ApiResponse<>(ApiResponseMessage.SUCCESS_DELETE_COMMENT));
+    }
+
+
+    @GetMapping("/posts/{postId}/comments")
+    public ResponseEntity<?> getComments(@PathVariable String postId, HttpServletRequest httpRequest){
+
+        HttpSession session = httpRequest.getSession(false);
+
+        if(session == null){
+            throw new CustomException(ApiResponseErrorMessage.EXPIRED_SESSION);
+        }
+
+        List<Comment> comments = commentService.getComments(postId);
+        List<CommentResponse> commentResponses = new ArrayList<>();
+
+        for(Comment comment : comments){
+             CommentResponse commentResponse =  new CommentResponse(
+                     comment.getNickname(),
+                     comment.getComment(),
+                     comment.getUserId(),
+                     comment.isDeleted()
+                     );
+             commentResponses.add(commentResponse);
+        }
+
+        return ResponseEntity
+                .status(ApiResponseMessage.SUCCESS_GET_COMMENTS.getStatusCode())
+                .body(new ApiResponse<>(ApiResponseMessage.SUCCESS_GET_COMMENTS, commentResponses));
+
     }
 
 }

@@ -6,9 +6,12 @@ import com.mark.community.entity.User;
 import com.mark.community.exception.CustomException;
 import com.mark.community.messages.ApiResponseErrorMessage;
 import com.mark.community.repository.CommentRepository;
+import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 
+@Service
 public class CommentService {
     private final CommentRepository commentRepository;
 
@@ -60,5 +63,10 @@ public class CommentService {
         commentRepository.save(comment);
 
         return comment;
+    }
+
+    public List<Comment> getComments(String postId) {
+        return commentRepository.findByPostIdLike(postId)
+                .orElseThrow(() ->new CustomException(ApiResponseErrorMessage.COMMENT_NOT_FOUND));
     }
 }

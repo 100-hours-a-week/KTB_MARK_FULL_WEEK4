@@ -17,6 +17,7 @@ public class Post {
     private int likes;
     private int comments;
     private int views;
+    private int reports;
 
     private boolean deleted;
     private boolean blind;
@@ -95,6 +96,10 @@ public class Post {
         this.edited = edited;
     }
 
+    public void setReports(int reports) {
+        this.reports = reports;
+    }
+
     public boolean isEdited() {
         return edited;
     }
@@ -141,6 +146,10 @@ public class Post {
 
     public Date getPostTime() {
         return postTime;
+    }
+
+    public int getReports() {
+        return reports;
     }
 
     public Post(String title, String body, String thumbnailId, String nickname, String userId) {
