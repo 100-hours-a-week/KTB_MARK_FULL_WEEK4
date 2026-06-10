@@ -26,7 +26,7 @@ public class PostRepositoryImpl implements PostRepository {
             for(Post post : postData){
                 posts.put(post.getPostId(), post);
                 int num = Integer.parseInt(post.getPostId().substring(1));
-                if(num > nextPostId) nextPostId = num + 1;
+                if(num >= nextPostId) nextPostId = num + 1;
             }
         }
     }
